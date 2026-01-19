@@ -1,4 +1,6 @@
 = Sécurisation des applications Web : Activité 1 - Injections
+:authorinitials: Patrice Dignan & OWASP Mutillidae
+:author: Timothée Robert (portage ADOC et compléments)
 :toc: left
 :toc-title: Sommaire
 :icons: font
