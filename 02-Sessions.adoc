@@ -8,16 +8,55 @@
 :imagesdir: images
 :sectnums:
 
-== Partie 1 : Activité OWASP (Authentification & Sessions)
+== Partie 1 : Bases Théoriques et Mécanismes
+Avant d'attaquer les failles, il est essentiel de comprendre comment fonctionne le web "normalement".
 
-=== I. Présentation générale
+=== Le protocole HTTP et la gestion d'état
 
-==== 1. Le risque Broken Authentication
+HTTP est un protocole **sans état** (Stateless). Cela signifie que par défaut, le serveur web ne se "souvient" pas de vous entre deux clics.
+
+.Le problème de l'amnésie du serveur
+[NOTE]
+====
+Sans mécanisme de session, si vous vous connectez sur la page A, le serveur vous a déjà oublié quand vous arrivez sur la page B. Il faudrait retaper son mot de passe à chaque page !
+====
+
+**La solution : Le Cookie de Session** +
+C'est l'équivalent d'un "bracelet de festival" ou d'un "ticket de vestiaire".
+
+1. Lors de l'authentification réussie, le serveur vous donne un **Identifiant de Session** (souvent stocké dans un cookie appelé `PHPSESSID` ou `JSESSIONID`).
+2. À chaque nouvelle requête, votre navigateur renvoie automatiquement ce cookie.
+3. Le serveur vérifie le cookie et retrouve vos informations (panier, infos compte) dans sa mémoire.
+
+=== Le triptyque AAA (Identification, Authentification, Autorisation)
+
+Il ne faut pas confondre ces trois termes :
+
+* **Identification (Qui êtes-vous ?)** : C'est déclarer son identité (ex: saisir le login `admin`).
+* **Authentification (Prouvez-le !)** : C'est fournir la preuve de cette identité (ex: saisir le mot de passe `1234`).
+* **Autorisation (Qu'avez-vous le droit de faire ?)** : Ce sont les droits accordés une fois authentifié (ex: accès à la page `/admin`).
+
+-> *Dans ce TP, nous attaquerons successivement ces trois piliers.*
+
+=== III. Stockage des Mots de passe
+
+Pour se protéger si la base de données est volée, on ne stocke jamais les mots de passe en clair.
+
+* **Hachage (Hash)** : Une fonction mathématique irréversible transforme le mot de passe en empreinte (ex: `a94a8fe5...`). Cf 1er semestre
+* **Salage (Salt)** : On ajoute des caractères aléatoires au mot de passe avant de le hacher. Cela empêche les pirates d'utiliser des "Rainbow Tables" (immenses listes de hachages pré-calculés) pour retrouver le mot de passe original. Cf 1er semestre
+
+<<<
+
+== Activités OWASP (Authentification & Sessions)
+
+=== Présentation générale
+
+==== Le risque Broken Authentication
 Ce risque est premier en 2025 et 2021, A01:2025 - Broken Access Control.
 
 Lors du développement d’une application, le codage des fonctions liées à l’authentification et à la gestion des sessions (cookie de session) peuvent être incorrectement implémentées, permettant ainsi à des attaquants de compromettre des mots de passe et des identifiants de session.
 
-==== 2. Conséquences
+==== Conséquences
 En cas de force brute sur des mots de passe ou de vol d’identifiant de session (session hijacking), une personne malveillante peut s’identifier avec le compte d’un autre utilisateur voire avec celui de l’administrateur.
 
 Les conséquences peuvent être particulièrement graves sur une application manipulant des données hautement confidentielles (applications médicales, bancaires…).
@@ -33,7 +72,7 @@ Si le codage est mal implémenté, l’application web risque d’offrir les vul
 * **Stockage non sécurisé :** Mots de passe en dur, non chiffrés ou sans salage.
 * **Session Management :** Cookies de session prévisibles, exposés dans l’URL, sans rotation ni timeout.
 
-==== 3. Bonnes pratiques
+==== Bonnes pratiques
 Les contre-mesures suivantes peuvent être mises en place :
 
 * **Messages génériques :** Ne pas indiquer la raison précise d’un échec (ne pas dire "Login incorrect", mais juste "Échec d'authentification").
@@ -42,7 +81,7 @@ Les contre-mesures suivantes peuvent être mises en place :
 * **Multi-facteurs (MFA) :** Pour les applications sensibles.
 * **Cookies de session :** Générer des IDs non prévisibles, rotation après authentification, destruction à la déconnexion, timeout.
 
-=== II. Objectifs et architecture de l’activité
+=== Objectifs et architecture de l’activité
 
 Trois défis sont proposés :
 
@@ -52,8 +91,10 @@ Trois défis sont proposés :
 
 **Environnement technique :**
 
-* **Machine attaquante :** 192.168.0.11 (Navigateur + Proxy Burp Suite)
-* **Serveur web :** 192.168.0.10 (Mutillidae / OWASP)
+Vous pouvez tout faire sur votre machine ou alors en binôme, exemple ci dessous:
+
+* **Machine attaquante :** 10.0.210.11 (Navigateur + Proxy Burp Suite)
+* **Serveur web :** 10.0.210.20 (Mutillidae / OWASP)
 
 .Architecture du réseau pour l'activité
 image::02-Architecture.png[Schéma architecture : Navigateur/Burp <-> Serveur OWASP]
@@ -63,9 +104,9 @@ Le serveur Mutillidae permet de définir le niveau de sécurité (Security Level
 * **Niveau 0 (Hosed) :** Non sécurisé (notre point de départ).
 * **Niveau 5 (Secure) :** Sécurisé (pour analyser les correctifs).
 
-=== III. Premier défi : Énumération des logins
+=== Premier défi : Énumération des logins
 
-==== 1. Objectif
+==== Objectif
 Obtenir une liste de logins valides à l’aide d’un dictionnaire en exploitant la verbosité des erreurs d'un Web Service SOAP.
 
 L’objectif est d’obtenir une liste de logins valides testés à l’aide d’un dictionnaire. Lorsque le développeur indique la raison d’un échec d’authentification (login incorrect), un attaquant peut profiter de ces messages d’échec afin de tester des listes de login en comparant les réponses obtenues entre un succès et un échec d’authentification.
@@ -79,12 +120,12 @@ Mutillidae permet d’aborder un certain nombre de problèmes de sécurité pos�
 .Pour aller plus loin sur les services web
 ****
 OWASP propose une page dédiée aux services web et aux problèmes de sécurités associés : +
-https://www.owasp.org/index.php/Web_Services
+https://cheatsheetseries.owasp.org/cheatsheets/Web_Service_Security_Cheat_Sheet.html
 ****
 
-==== 2. À vous de jouer (Voir Dossier 1 pour le pas-à-pas)
+==== À vous de jouer (Voir Dossier 1 pour le pas-à-pas)
 
-**A. Mode non sécurisé (Level 0)**
+**Mode non sécurisé (Level 0)**
 
 1.  Installer l’extension **Wsdler** dans Burp (cf. Dossier 1).
 2.  Positionner le niveau de sécurité à **0**.
@@ -94,7 +135,14 @@ https://www.owasp.org/index.php/Web_Services
 6.  Lancer l’énumération avec **Burp Intruder**.
 7.  *Question :* Quelles sont les lignes de la réponse qui permettent de distinguer un bon login d'un mauvais ?
 
-**B. Mode sécurisé (Level 5)**
+[TIP]
+.Astuce d'expert : Le Temps de Réponse
+====
+Parfois, le serveur ne renvoie pas de message d'erreur différent. Dans ce cas, observez la colonne **"Time"** (temps de réponse) dans l'Intruder.
+Il arrive que la base de données mette quelques millisecondes de plus à répondre quand un utilisateur **existe** (car elle va chercher ses infos) que quand il n'existe pas. C'est ce qu'on appelle une attaque par canal auxiliaire (Timing Attack).
+====
+
+**Mode sécurisé (Level 5)**
 
 1.  Fermer/Relancer Burp. Positionner le niveau de sécurité à **5**.
 2.  Relancer l’attaque.
@@ -102,58 +150,68 @@ https://www.owasp.org/index.php/Web_Services
 4.  Chercher dans le code source de `ws-user-account.php` (`c:\laragon\www\mutillidae\webservices\soap\`) le mécanisme de protection.
 5.  *Question :* Expliquer le rôle de l'instruction `EncodeforHTML`.
 
-==== 3. Bonnes pratiques
+==== Bonnes pratiques
 * Ne pas indiquer la cause d'un échec.
 * Encoder les messages de sortie.
 
-=== IV. Deuxième défi : Force brute sur un mot de passe
+=== Deuxième défi : Force brute sur un mot de passe
 
-==== 1. Objectif
+==== Objectif
 Réaliser une force brute pour trouver le mot de passe du compte `admin`.
 
-==== 2. À vous de jouer (Voir Dossier 2 pour le pas-à-pas)
+==== À vous de jouer (Voir Dossier 2 pour le pas-à-pas)
 
-**A. Mode non sécurisé**
+**Mode non sécurisé**
 
 1.  Préparer l’attaque en interceptant une tentative de login.
 2.  Lancer la force brute avec **Burp Intruder**.
 
-**B. Mode sécurisé & Analyse**
+**Mode sécurisé & Analyse**
 
 1.  Passer en niveau de sécurité **5**.
 2.  Relancer l'attaque. Échoue-t-elle ?
 3.  Observer le code de `register.php`. Peut-on créer un mot de passe faible en niveau 5 ?
 4.  *Question :* Côté administrateur, quelles mesures permettent de détecter ce type d’attaque ? (IPS, Fail2Ban...).
 
-==== 3. Bonnes pratiques
+==== Bonnes pratiques
 * limitation de l’attaque : le développeur doit rajouter des fonctions permettant de tester la sécurité d’un mot de passe au moment de la création d’un compte en empêchant l’utilisation d’un mot de passe non sécurisé
 * empêcher l’attaque : côté administrateur système, les systèmes de prévention des intrusions peuvent bloquer les attaques de type force brute.
 
-=== V. Troisième défi : Vol de session
+=== Troisième défi : Vol de session
 
-==== 1. Objectif
+==== Objectif
 Se connecter au compte d'un autre utilisateur sans connaitre son mot de passe, en prédisant son cookie de session.
 
-==== 2. À vous de jouer (Voir Dossier 3 pour le pas-à-pas)
+==== À vous de jouer (Voir Dossier 3 pour le pas-à-pas)
 
-**A. Vol de session**
+**Vol de session**
 
 1.  Intercepter le cookie d’un utilisateur authentifié.
 2.  Modifier l'identifiant (`uid`) dans le cookie pour usurper une session.
 
-**B. Mode sécurisé & Analyse**
+**Mode sécurisé & Analyse**
 
 1.  Passer en niveau de sécurité **5**.
 2.  La modification du cookie `uid` fonctionne-t-elle encore ?
 3.  Comparer le code source de `index.php` entre les niveaux 0 et 1/5.
 4.  *Question :* Quelle est la différence entre un cookie et une session ?
 
-==== 3. Bonnes pratiques
+.Analyse critique du Cookie
+****
+Regardez la différence entre les deux cookies reçus :
+
+* `PHPSESSID` : `5cdtq6mld2m0mvlfo...` (Long, aléatoire, impossible à deviner -> **SÉCURISÉ**)
+* `uid` : `24` (Court, séquentiel, facile à deviner -> **NON SÉCURISÉ**)
+
+C'est la notion d'**Entropie** (le désordre/le hasard). Pour qu'une session soit sûre, l'identifiant doit avoir une entropie maximale pour qu'aucun pirate ne puisse prédire le numéro suivant.
+****
+
+==== Bonnes pratiques
 * IDs de session non prévisibles (aléatoires).
 * Rotation des IDs après authentification.
 * Encodage des IDs.
 
-=== VI. Conclusion : Tableau de synthèse
+=== Conclusion : Tableau de synthèse
 
 [cols="1,3"]
 |===
@@ -437,13 +495,11 @@ image::02-Dossier3-5.png[Barre d'état : Logged In Admin admin]
 
 <<<
 
-== Partie 2 : Challenge cURL (Session)
+== Challenge cURL (Session)
 
-=== I. Le Challenge
+=== Le Challenge
 
-Voici la transcription du challenge session :
-
-. **Installation :** Installez les 2 fichiers `session.php` et `supprime.php` (situés dans le répertoire challenge fourni) dans un répertoire visible par Laragon.
+. **Installation :** Installez les 2 fichiers `session.php` et `supprime.php` dans un répertoire visible par Laragon.
 
 .Fichier session.php
 [source,php]
@@ -500,17 +556,17 @@ http://localhost/challenge/session.php
 Normalement le serveur s’est rappelé de votre dernière requête.
 ====
 
-=== II. Ce qui est attendu
+=== Ce qui est attendu
 Votre challenge consiste à **reproduire ce scénario, mais en ligne de commande, avec cURL**.
 
 Un rapport détaillé est attendu !
 
-=== III. Ressources & Aide
+=== Ressources & Aide
 
 * Pour des rappels sur HTTP, les verbes et Curl, consultez le site de référence : https://ldv-melun.github.io/sio-slam/sio-component/index-spring-boot.html
 * Il y a également des informations intéressantes sur la notion de **Session** pour ce challenge.
 
-=== IV. Annexes : Installation de Curl
+=== Annexes : Installation de Curl
 
 **Outil en ligne de commande - Curl**
 
@@ -528,3 +584,13 @@ image::02-challenge-2.png[Fenêtre Variables d'environnement : Ajout du chemin C
 
 .Configuration de la variable PATH sous Windows étape 3
 image::02-challenge-3.png[Fenêtre Variables d'environnement : Ajout du chemin Curl]
+
+**Scénario à reproduire avec cURL :**
+
+1.  Appeler la page (Le serveur doit vous dire "Bonjour gentil inconnu").
+2.  Appeler la page en donnant un nom (Le serveur enregistre le nom en session).
+3.  Rappeler la page sans paramètre (Le serveur doit vous reconnaître !).
+
+**Indice pour les étudiants, si vous ne trouvez pas :**
+
+Utilisez les options `-c cookies.txt` (pour enregistrer le cookie envoyé par le serveur) et `-b cookies.txt` (pour renvoyer le cookie au serveur).
