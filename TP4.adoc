@@ -6,7 +6,7 @@ image::images/reussi1.png[]
 
 
 ==== Q1 Pourquoi est-il dangereux de stocker un paramètre comme Admin=false directement dans un cookie, même si l’utilisateur ne peut pas le voir à l’écran ?
-*C'est facilement modifialble*
+*C'est facilement modifiable en visualisant le cookie avec la touche F12*
 
 
 == Lab Emuneration de login
