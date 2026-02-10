@@ -97,14 +97,53 @@ Le site contient une table nommée `users` avec les colonnes `username` et `pass
 2.  Récupérer le mot de passe de l'utilisateur `administrator`.
 3.  Vous connecter avec ce mot de passe pour valider le lab.
 
+=== Lab 5 : L'Injection en Aveugle (Blind SQLi)
+**Titre :** _Blind SQL injection with conditional responses_
+**Lien :** https://portswigger.net/web-security/sql-injection/blind/lab-conditional-responses
+
+**Niveau :** Avancé (Practitioner)
+
+**Contexte :**
+Jusqu'à présent, quand vous faisiez une injection, vous voyiez le résultat (le nom du produit, le mot de passe, ou une erreur).
+Dans une injection "Blind" (Aveugle), l'application ne renvoie **aucune donnée** de la base et **aucune erreur**.
+Elle réagit juste différemment (un tout petit détail change sur la page) selon que votre requête SQL est VRAIE ou FAUSSE.
+
+**Le Mécanisme :**
+L'application utilise un Cookie `TrackingId` pour vous dire "Welcome back".
+La requête ressemble à : `SELECT * FROM tracking WHERE id = 'VOTRE_COOKIE'`.
+* Si la requête renvoie un résultat -> Le message "Welcome back" s'affiche.
+* Si la requête ne renvoie rien -> Le message disparaît.
+
+**Objectif :**
+1.  Confirmer la vulnérabilité en faisant apparaître/disparaître le message "Welcome back" avec une condition logique (`AND 1=1` vs `AND 1=2`).
+2.  Deviner le mot de passe de `administrator` caractère par caractère (ou au moins trouver la longueur du mot de passe).
+
+[TIP]
+.La logique de l'attaque
+====
+Vous devez poser des questions binaires à la base de données :
+_"Est-ce que le mot de passe de l'admin commence par la lettre 'a' ?"_
+Payload : `' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='administrator')='a`
+
+* Si "Welcome back" s'affiche : **OUI** (c'est un 'a').
+* Si "Welcome back" disparaît : **NON** (ce n'est pas un 'a', essayez 'b'...).
+
+_Note : Pour valider le labo rapidement sans tester tout l'alphabet, concentrez-vous sur la compréhension de la logique VRAI/FAUX._
+====
 
 == Questions de Synthèse (Compte-rendu)
 
 Répondez aux questions suivantes dans votre compte-rendu pour valider votre compréhension des concepts.
 
-=== Sur les Injections SQL (Labs 1 à 4)
+=== Sur les Injections SQL (Labs 1 à 5)
+
 **Q1.** Dans le Lab 1, pourquoi l'ajout de `OR 1=1` permet-il d'afficher des données qui étaient censées être cachées ? Expliquez la logique booléenne.
+
 **Q2.** Dans le Lab 2, quel est le rôle précis des caractères `--` (ou `#` selon la base de données) à la fin de votre injection ? Pourquoi cela permet-il de se passer du mot de passe ?
+
 **Q3.** Dans le Lab 3 (UNION), pourquoi est-il **obligatoire** de connaître le nombre exact de colonnes avant de pouvoir extraire des données ? Que se passe-t-il si les deux requêtes n'ont pas la même structure ?
+
 **Q4.** Quelle est la meilleure méthode de protection (côté code PHP/Java/C#) pour empêcher totalement les injections SQL, rendant les caractères comme `'` ou `OR` inefficaces ?
 
+**Q5.**  Dans une injection SQL "Blind" (Aveugle), l'attaquant ne voit jamais les données s'afficher à l'écran.
+Comment fait-il alors pour voler un mot de passe entier ? Pourquoi cette technique est-elle beaucoup plus lente qu'une injection `UNION` classique ?
