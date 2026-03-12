@@ -72,3 +72,6 @@ On a 5 protections mise en oeuvre par le niveau5 :
 
 
 == Deuxième défi
+=== Niveau de Sécurité 0
+
+image:images/capture.png[]
