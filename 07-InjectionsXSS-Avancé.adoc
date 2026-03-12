@@ -6,12 +6,6 @@
 :source-highlighter: rouge
 :imagesdir: ./images/tp7
 
-[NOTE]
-.Commentaire Pédagogique (Pour l'enseignant)
-====
-Cette séance marque une excellente transition. Après PortSwigger (qui propose des laboratoires très isolés), Mutillidae plonge les étudiants dans une application Web complète, simulant un environnement d'entreprise vulnérable plus réaliste. C'est l'occasion idéale de vérifier si les concepts vus précédemment (Reflected, Stored, Encodage) sont véritablement acquis ou s'ils faisaient juste du "presse-bouton".
-====
-
 == Présentation générale
 
 === Présentation des failles de type XSS
@@ -104,7 +98,7 @@ image::code_htmlspecialchars.png[Exemple de code PHP htmlspecialchars]
 Deux défis sont proposés pour illustrer la problématique des attaques de type XSS :
 
 * une attaque XSS de type réfléchissante via un contexte HTML : l’objectif est d’injecter du code JavaScript et de l’exécuter afin de récupérer le cookie d’identification d’une victime;
-* une attaque XSS de type persistante visant à détourner les visiteurs d’une page vers une autre page permettant de voler leur identifiant de session. : 94]
+* une attaque XSS de type persistante visant à détourner les visiteurs d’une page vers une autre page permettant de voler leur identifiant de session.
 
 Ces deux défis peuvent être réalisés de manière indépendante (voir les prérequis). Chaque défi est associé à un dossier documentaire.
 
@@ -113,7 +107,7 @@ Pour rappel, l’environnement de travail est le suivant :
 image::architecture_activite.png[Architecture réseau Mutillidae]
 
 
-Le serveur Mutillidae propose un site Web conçu pour identifier et tester les failles de sécurité identifiées par l’OWASP: 97]. Il est possible pour chacune d’entre elles, de définir le niveau de sécurité appliqué.
+Le serveur Mutillidae propose un site Web conçu pour identifier et tester les failles de sécurité identifiées par l’OWASP. Il est possible pour chacune d’entre elles, de définir le niveau de sécurité appliqué.
 Notre démarche consistera, pour les failles de type XSS :
 
 1. à partir de la version non sécurisée de la page concernée et à mettre en évidence la faille de sécurité ;
@@ -121,7 +115,7 @@ Notre démarche consistera, pour les failles de type XSS :
 3. l’étude des mécanismes de sécurisation utilisés, donc du code de la page associée, permettra de dégager des bonnes pratiques de programmation.
 
 Quant à la machine attaquante, elle comprend un navigateur ainsi que le proxy BurpSuite qui permet d’intercepter les requêtes avant de les envoyer au serveur. L’objectif étant de modifier les paramètres de certaines requêtes afin de tester des injections de code. Par exemple, la valeur saisie pour le login sera remplacée par du code JavaScript.
-Dans le contexte ENC sous Windows, votre machine joue à la fois le rôle de serveur et de navigateur attaquant: 106]. Il en est de même si vous avez installé l’image sur Linux (comme indiqué Séance 1).
+Dans le contexte ENC sous Windows, votre machine joue à la fois le rôle de serveur et de navigateur attaquant. Il en est de même si vous avez installé l’image sur Linux (comme indiqué Séance 1).
 
 
 
