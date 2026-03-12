@@ -4,7 +4,7 @@
 === Niveau de sécurité 0
 image:images/ATQ1.png[]
 
-<script>alert(document.cookie);</script>
+C'est la commande qu'on a encoder en URL puis placer à la place de localhost "<script>alert(document.cookie);</script>"
 
 == Niveau de sécurité 1
 
