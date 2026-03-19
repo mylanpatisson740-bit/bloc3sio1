@@ -21,6 +21,26 @@ Il est essentiel de ne pas confondre ces deux vulnérabilités qui ciblent toute
 * **Le mécanisme :** L'attaquant attire la victime (déjà connectée au site cible) sur une page web malveillante qu'il contrôle. Cette page contient un code (comme un formulaire caché) qui force le navigateur de la victime à envoyer une requête HTTP vers le site cible.
 * **Le danger :** Le navigateur joint automatiquement le cookie de session de la victime à cette requête. Le serveur cible reçoit la requête, voit un cookie valide, et exécute l'action (changement de mot de passe, virement bancaire, etc.) en pensant que la victime en est à l'origine.
 
+
+[NOTE]
+.Comprendre l'environnement : L'Exploit Server
+====
+Dans les scénarios d'attaques "Cross-Site" (comme le CSRF), l'attaquant doit posséder son propre site web pour y héberger son piège (le formulaire caché) et y attirer la victime.
+
+Pour vous éviter de devoir configurer un serveur web public externe pour chaque laboratoire, PortSwigger vous fournit un **Exploit Server**.
+Accessible via un bouton en haut de l'interface des laboratoires, il simule votre domaine d'attaquant.
+
+**Comment l'utiliser ?**
+L'interface de l'Exploit Server est très simple et se compose de 3 zones principales :
+
+* **File path :** L'URL de votre page piégée (par défaut `/exploit`).
+* **Body :** La zone de texte où vous allez coller votre code HTML/JavaScript malveillant (le payload).
+* **Les boutons d'action :**
+** `Store` : Sauvegarde votre code sur le serveur.
+** `View exploit` : Vous permet de visualiser votre propre page piégée pour tester si elle s'affiche ou s'exécute correctement.
+** `Deliver exploit to victim` : Simule l'envoi du lien à la victime (un robot automatisé). Le robot va visiter votre Exploit Server, déclencher votre code, et subir l'attaque. C'est ce bouton qui permet de valider le laboratoire !
+====
+
 == Travaux Pratiques (Laboratoires PortSwigger & Mutillidae)
 
 [NOTE]
