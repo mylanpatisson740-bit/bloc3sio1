@@ -1,4 +1,4 @@
-= Séance 10 : Applications Cybersécurité - Études de cas CSRF
+= Séance 09 : Applications Cybersécurité - Études de cas CSRF
 :toc: left
 :toc-title: Sommaire
 :icons: font

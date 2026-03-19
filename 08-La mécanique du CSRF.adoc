@@ -1,4 +1,4 @@
-= Séance 9 : La mécanique du CSRF (Cross-Site Request Forgery)
+= Séance 8 : La mécanique du CSRF (Cross-Site Request Forgery)
 :toc: left
 :toc-title: Sommaire
 :icons: font
