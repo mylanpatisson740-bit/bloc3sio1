@@ -3,7 +3,7 @@
 :toc-title: Sommaire
 :icons: font
 :source-highlighter: rouge
-:imagesdir: ./images
+:imagesdir: ./images/tp8
 
 == Introduction
 
@@ -98,11 +98,11 @@ Ce second TP illustre les attaques CSRF visant une action critique : la suppress
 * **Double Submit Cookie Pattern :** Le token est généré côté serveur puis envoyé dans un cookie ET dans un champ caché du formulaire. À la réception, le serveur compare ces deux éléments fournis par le client.
 
 [NOTE]
-.Suggestions pédagogiques
+.Réflexion & Evolutions possibles
 ====
-* Faites deviner quelle application est vulnérable avant de lire le code.
-* Proposez de bloquer l’attaque par d’autres moyens (captcha, entête custom, etc.).
-* Ajoutez une confirmation JS ou une alerte pour améliorer l’UX.
+* Essayer deviner quelle application est vulnérable avant de lire le code.
+* Essayez de bloquer l’attaque par d’autres moyens (captcha comme site de cantine ENC, entête custom, etc.).
+* Ajoutez une confirmation JS ou une alerte pour améliorer l’UX (UX = Interface utilisateur).
 ====
 
 === Discussion de synthèse
@@ -263,12 +263,15 @@ Le projet OWASP propose différentes approches pour se prémunir des attaques CS
 **Protection CSRF avec le patron de conception Synchronizer Token Pattern**
 Il s’agit lors d’une session de générer sur le serveur un identifiant d’accès unique, nommé jeton (token) CSRF, non prédictible et avec une durée de validité limitée dans le temps. Ce jeton est stocké en variable de session et ajouté dans un champ caché d’un formulaire ou dans un paramètre de l’identifiant URI pour chaque action sensible à sécuriser (déconnexion, modification/suppression de données en BDD, etc.).
 
-
+image::STP.png[Schéma du Synchronizer Token Pattern]
+_(Schéma copié de l'EDC LAMA du réseau CERTA)_
 Lorsque le serveur reçoit une requête, il vérifie que le jeton stocké en variable de session et celui transmis correspondent bien. Si ce n'est pas le cas, la requête est rejetée comme étant une tentative d’attaque CSRF.
 
 **Protection CSRF avec le patron de conception Double Submit Pattern :**
 Il s’agit également de faire générer un jeton CSRF par le serveur mais celui-ci n’est pas stocké en variable de session sur le serveur mais envoyé au client lors de la génération de la page HTML sous deux formes distinctes : un témoin de connexion (cookie) envoyé de manière habituelle dans les entêtes de la requête HTTP et un jeton envoyé dans le corps de la requête (par exemple dans un champ caché d'un formulaire).
 
+image::DSP.png[Schéma du Double Submit Pattern]
+_(Schéma copié de l'EDC LAMA du réseau CERTA)_
 
 Lorsque le serveur reçoit une requête, il vérifie que les deux jetons transmis (celui du cookie et celui du formulaire) correspondent bien. Si les deux informations ne sont pas présentes ou ne correspondent pas, la requête est rejetée.
 
