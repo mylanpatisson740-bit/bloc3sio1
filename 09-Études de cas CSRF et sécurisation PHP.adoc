@@ -115,6 +115,8 @@ Expliquez leur fonctionnement, ainsi que leurs avantages et inconvénients.
 
 _En vous aidant des annexes fournies en Partie 3, répondez aux missions suivantes :_
 
+link:documentation/23SI6SLAM-1_Lama_Zoo_Sujet_BAT_2023.docx[Télécharger l'étude de cas originelle : Lama Zoo (Format Word)]
+
 L’équipe informatique du parc zoologique souhaite répondre à une menace. Mme Delperouze vous adresse le message suivant :
 
 [quote, Mme Delperouze]
